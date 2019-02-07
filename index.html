@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>nearest-color demo</title>
+    <title>nearest-human-color demo</title>
     <style type="text/css">
         body > div {
             width: 960px;
@@ -63,12 +63,12 @@
             text-align: center;
         }
     </style>
-    <script src="nearestColor.js"></script>
+    <script src="nearestHumanColor.js"></script>
 </head>
 
 <body>
     <div>
-        <h1>nearest-color</h1>
+        <h1>nearest-human-color</h1>
 
         <p>
             Choose a color using the picker. The color you selected will be
@@ -98,7 +98,7 @@
         </div>
 
         <!-- "Fork me on GitHub" ribbon -->
-        <a href="https://github.com/dtao/nearest-color"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github-camo.global.ssl.fastly.net/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
+        <a href="https://github.com/peter-lewis/nearest-human-color"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_green_007200.png?resize=149%2C149" alt="Fork me on GitHub" data-recalc-dims="1"></a>
     </div>
 
     <script>
@@ -109,7 +109,7 @@
                 sample = document.getElementById(label + '-sample'),
                 actual = sample.querySelector('.actual'),
                 nearest = sample.querySelector('.nearest'),
-                getColor = nearestColor.from(colors);
+                getColor = nearestHumanColor.from(colors);
 
             colorPicker.addEventListener('change', function() {
                 var value = colorPicker.value;
@@ -125,7 +125,7 @@
             });
         }
 
-        prepareSection('default', nearestColor.DEFAULT_COLORS);
+        prepareSection('default', nearestHumanColor.DEFAULT_COLORS);
 
         prepareSection('alternate', [
             '#7EB5D6',

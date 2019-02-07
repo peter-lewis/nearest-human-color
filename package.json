@@ -1,20 +1,22 @@
 {
-  "name": "nearest-color",
-  "version": "0.4.4",
-  "description": "Find the nearest color",
-  "main": "nearestColor.js",
+  "name": "nearest-human-color",
+  "version": "0.1.0",
+  "description": "Find the nearest approximate human color",
+  "main": "nearestHumanColor.js",
   "scripts": {
-    "test": "autodoc -t nearestColor.js"
+    "serve": "http-server --cors -o",
+    "test": "autodoc -t nearestHumanColor.js"
   },
   "keywords": [
     "color",
     "colors"
   ],
-  "author": "Dan Tao <daniel.tao@gmail.com>",
+  "author": "Peter Lewis <peter.noah.lewis@gmail.com>, based on code from Dan Tao <daniel.tao@gmail.com>",
   "license": "MIT",
-  "repository": "https://github.com/dtao/nearest-color",
+  "repository": "https://github.com/peter-lewis/nearest-human-color",
   "dependencies": {},
   "devDependencies": {
-    "autodoc": ">= 0.6.1"
+    "autodoc": ">= 0.6.1",
+    "http-server": "^0.11.1"
   }
 }

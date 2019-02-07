@@ -29,31 +29,31 @@
 
   /**
    * Gets the nearest color, from the given list of {@link ColorSpec} objects
-   * (which defaults to {@link nearestColor.DEFAULT_COLORS}).
+   * (which defaults to {@link nearestHumanColor.DEFAULT_COLORS}).
    *
    * Probably you wouldn't call this method directly. Instead you'd get a custom
-   * color matcher by calling {@link nearestColor.from}.
+   * color matcher by calling {@link nearestHumanColor.from}.
    *
    * @public
    * @param {RGB|string} needle Either an {@link RGB} color or a hex-based
    *     string representing one, e.g., '#FF0'
    * @param {Array.<ColorSpec>=} colors An optional list of available colors
-   *     (defaults to {@link nearestColor.DEFAULT_COLORS})
+   *     (defaults to {@link nearestHumanColor.DEFAULT_COLORS})
    * @return {ColorMatch|string} If the colors in the provided list had names,
    *     then a {@link ColorMatch} object with the name and (hex) value of the
    *     nearest color from the list. Otherwise, simply the hex value.
    *
    * @example
-   * nearestColor({ r: 200, g: 50, b: 50 }); // => '#f00'
-   * nearestColor('#f11');                   // => '#f00'
-   * nearestColor('#f88');                   // => '#f80'
-   * nearestColor('#ffe');                   // => '#ff0'
-   * nearestColor('#efe');                   // => '#ff0'
-   * nearestColor('#abc');                   // => '#808'
-   * nearestColor('red');                    // => '#f00'
-   * nearestColor('foo');                    // => throws
+   * nearestHumanColor({ r: 200, g: 50, b: 50 }); // => '#f00'
+   * nearestHumanColor('#f11');                   // => '#f00'
+   * nearestHumanColor('#f88');                   // => '#f80'
+   * nearestHumanColor('#ffe');                   // => '#ff0'
+   * nearestHumanColor('#efe');                   // => '#ff0'
+   * nearestHumanColor('#abc');                   // => '#808'
+   * nearestHumanColor('red');                    // => '#f00'
+   * nearestHumanColor('foo');                    // => throws
    */
-  function nearestColor(needle, colors) {
+  function nearestHumanColor(needle, colors) {
     needle = parseColor(needle);
 
     if (!needle) {
@@ -65,15 +65,15 @@
         rgb,
         value;
 
-    colors || (colors = nearestColor.DEFAULT_COLORS);
+    colors || (colors = nearestHumanColor.DEFAULT_COLORS);
 
     for (var i = 0; i < colors.length; ++i) {
       rgb = colors[i].rgb;
 
       distanceSq = (
-        Math.pow(needle.r - rgb.r, 2) +
-        Math.pow(needle.g - rgb.g, 2) +
-        Math.pow(needle.b - rgb.b, 2)
+        2 * (Math.pow(needle.r - rgb.r, 2)) +
+        4 * (Math.pow(needle.g - rgb.g, 2)) +
+        3 * (Math.pow(needle.b - rgb.b, 2))
       );
 
       if (distanceSq < minDistanceSq) {
@@ -102,7 +102,7 @@
    * @param {Array.<string>|Object} availableColors An array of hex-based color
    *     strings, or an object mapping color *names* to hex values.
    * @return {function(string):ColorMatch|string} A function with the same
-   *     behavior as {@link nearestColor}, but with the list of colors
+   *     behavior as {@link nearestHumanColor}, but with the list of colors
    *     predefined.
    *
    * @example
@@ -122,9 +122,9 @@
    *   'invalid': 'foo'
    * };
    *
-   * var getColor = nearestColor.from(colors);
+   * var getColor = nearestHumanColor.from(colors);
    * var getBGColor = getColor.from(bgColors);
-   * var getAnyColor = nearestColor.from(colors).or(bgColors);
+   * var getAnyColor = nearestHumanColor.from(colors).or(bgColors);
    *
    * getColor('ffe');
    * // => { name: 'white', value: 'fff', rgb: { r: 255, g: 255, b: 255 }, distance: 17}
@@ -143,25 +143,25 @@
    *
    * getAnyColor('#888'); // => '#444'
    *
-   * nearestColor.from(invalidColors); // => throws
+   * nearestHumanColor.from(invalidColors); // => throws
    */
-  nearestColor.from = function from(availableColors) {
+  nearestHumanColor.from = function from(availableColors) {
     var colors = mapColors(availableColors),
-        nearestColorBase = nearestColor;
+        nearestHumanColorBase = nearestHumanColor;
 
-    var matcher = function nearestColor(hex) {
-      return nearestColorBase(hex, colors);
+    var matcher = function nearestHumanColor(hex) {
+      return nearestHumanColorBase(hex, colors);
     };
 
     // Keep the 'from' method, to support changing the list of available colors
     // multiple times without needing to keep a reference to the original
-    // nearestColor function.
+    // nearestHumanColor function.
     matcher.from = from;
 
     // Also provide a way to combine multiple color lists.
     matcher.or = function or(alternateColors) {
       var extendedColors = colors.concat(mapColors(alternateColors));
-      return nearestColor.from(extendedColors);
+      return nearestHumanColor.from(extendedColors);
     };
 
     return matcher;
@@ -214,8 +214,8 @@
       return source;
     }
 
-    if (source in nearestColor.STANDARD_COLORS) {
-      return parseColor(nearestColor.STANDARD_COLORS[source]);
+    if (source in nearestHumanColor.STANDARD_COLORS) {
+      return parseColor(nearestHumanColor.STANDARD_COLORS[source]);
     }
 
     var hexMatch = source.match(/^#?((?:[0-9a-f]{3}){1,2})$/i);
@@ -357,7 +357,7 @@
   /**
    * A map from the names of standard CSS colors to their hex values.
    */
-  nearestColor.STANDARD_COLORS = {
+  nearestHumanColor.STANDARD_COLORS = {
     aqua: '#0ff',
     black: '#000',
     blue: '#00f',
@@ -379,10 +379,10 @@
 
   /**
    * Default colors. Comprises the colors of the rainbow (good ol' ROY G. BIV).
-   * This list will be used for calls to {@nearestColor} that don't specify a list
+   * This list will be used for calls to {@nearestHumanColor} that don't specify a list
    * of available colors to match.
    */
-  nearestColor.DEFAULT_COLORS = mapColors([
+  nearestHumanColor.DEFAULT_COLORS = mapColors([
     '#f00', // r
     '#f80', // o
     '#ff0', // y
@@ -392,12 +392,12 @@
     '#808'  // v
   ]);
 
-  nearestColor.VERSION = '0.4.4';
+  nearestHumanColor.VERSION = '0.1.0';
 
   if (typeof module === 'object' && module && module.exports) {
-    module.exports = nearestColor;
+    module.exports = nearestHumanColor;
   } else {
-    context.nearestColor = nearestColor;
+    context.nearestHumanColor = nearestHumanColor;
   }
 
 }(this));
