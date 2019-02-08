@@ -1,6 +1,6 @@
 {
   "name": "nearest-human-color",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Find the nearest approximate human color",
   "main": "nearestHumanColor.js",
   "scripts": {
