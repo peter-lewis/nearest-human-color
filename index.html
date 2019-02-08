@@ -103,6 +103,7 @@
 
     <script>
         var colorPicker = document.querySelector('input[name="color"]');
+        colorPicker.value = '#559821';
 
         function prepareSection(label, colors) {
             var palette = document.getElementById(label + '-palette'),
@@ -111,30 +112,52 @@
                 nearest = sample.querySelector('.nearest'),
                 getColor = nearestHumanColor.from(colors);
 
-            colorPicker.addEventListener('change', function() {
+            var updateColor = function() {
                 var value = colorPicker.value;
 
                 actual.style.backgroundColor = value;
                 nearest.style.backgroundColor = getColor(value);
-            });
+            }
+
+            colorPicker.addEventListener('change', updateColor);
 
             colors.forEach(function(color) {
                 var span = document.createElement('SPAN');
                 span.style.backgroundColor = color.source || color;
                 palette.appendChild(span);
             });
+
+            updateColor();
         }
 
         prepareSection('default', nearestHumanColor.DEFAULT_COLORS);
 
         prepareSection('alternate', [
-            '#7EB5D6',
-            '#2A75A9',
-            '#274257',
-            '#DFC184',
-            '#8F6048',
-            '#644436'
+            '#ffffff',
+            '#8c2633',
+            '#002868',
+            '#e54c7c',
+            '#f9e24c',
+            '#000000',
+            '#9b6a45',
+            '#00494f',
+            '#0051ba',
+            '#8e2344',
+            '#827f77',
+            '#a3a2a0',
+            '#009e49',
+            '#ce1126',
+            '#ffd691',
+            '#fcd116',
+            '#8e774d',
+            '#007a5e',
+            '#8e47ad',
+            '#008c82',
+            '#ff77a8',
+            '#0091c9',
+            '#f74902'
         ]);
+
     </script>
 </body>
 

@@ -1,10 +1,10 @@
 {
   "name": "nearest-human-color",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Find the nearest approximate human color",
   "main": "nearestHumanColor.js",
   "scripts": {
-    "serve": "http-server --cors -o",
+    "serve": "http-server -c-1 --cors -o",
     "test": "autodoc -t nearestHumanColor.js"
   },
   "keywords": [

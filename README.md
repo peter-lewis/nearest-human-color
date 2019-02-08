@@ -1,8 +1,6 @@
 # nearest-human-color
 
-Find the nearest color given a predefined list of colors.
-Based on nearest-color from dtao
-https://github.com/dtao/nearest-color
+Find the nearest approximation of a color given a predefined list of colors.
 
 ## Usage
 
@@ -33,6 +31,28 @@ From [the Wikipedia article on the subject](http://en.wikipedia.org/wiki/Nearest
 > database. Naive search can, on average, outperform space partitioning approaches on higher
 > dimensional spaces.
 
-This library uses an approach to approximate what the human eye sees. Performance should be totally fine unless there are **many** pre-defined colors to search (and even then, it will probably only matter if you're calling `nearestColor` a ton of times).
+This library uses an approach to approximate what the human eye sees. Performance should be totally fine unless there are **many** pre-defined colors to search (and even then, it will probably only matter if you're calling `nearestHumanColor` a ton of times).
+
+The library then takes the results from the Euclidean color differencial, and then average it with CIEDE2000 color differencial calculation to obtain an approximation of closest color as a human eye would see.
+
+The approach is a combination of the two methods listed here, with some tweaking to imrpove output:
+https://en.wikipedia.org/wiki/Color_difference
 
 The most realistic optimization that could be made here would probably be to cache results so that multiple calls for the same color can return immediately.
+
+## Special Thanks
+
+Special thanks to the following individuals as portions of their projects were used for this project.
+
+- **dtao**
+  The code in this project was originally forked from their nearest-color library and would not be possible without this impressive work.
+  https://github.com/dtao/nearest-color
+
+- **Qix-**
+  The code used for the rgb to lab conversion is from this project.
+  https://github.com/Qix-/color-convert
+
+- **markusn**
+  The CIEDE2000 color differencial algorithym is from this project.
+  https://github.com/markusn/color-diff
+
