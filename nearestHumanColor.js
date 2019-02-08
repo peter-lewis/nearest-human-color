@@ -106,17 +106,9 @@
         differencial
       );
 
-
       distanceSq = Math.sqrt(distanceSq);
-
       labDistance = ciede2000(needle.lab, lab);
-
-      console.log('distanceSq', distanceSq);
-      console.log('labDistance', labDistance);
       distanceSq = (distanceSq + labDistance) / 2;
-      console.log('average', labDistance);
-      // distanceSq = labDistance;
-
 
       if (distanceSq < minDistanceSq) {
         minDistanceSq = distanceSq;
@@ -644,7 +636,7 @@
     '#808'  // v
   ]);
 
-  nearestHumanColor.VERSION = '1.0.1';
+  nearestHumanColor.VERSION = '1.0.2';
 
   if (typeof module === 'object' && module && module.exports) {
     module.exports = nearestHumanColor;
