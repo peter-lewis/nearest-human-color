@@ -62,6 +62,7 @@
 
     var distanceSq,
         labDistance,
+        deltaEDistance,
         minDistanceSq = Infinity,
         rgb,
         value,
@@ -106,9 +107,13 @@
         differencial
       );
 
+      // Compute the color distance using 3 methods, RGB square differencial, ciede2000, and the deltaE method
+      // Weight the labs to be worth more to reduce the impact of the square differencial
       distanceSq = Math.sqrt(distanceSq);
       labDistance = ciede2000(needle.lab, lab);
-      distanceSq = (distanceSq + labDistance) / 2;
+      deltaEDistance = deltaE(needle.lab, lab);
+      distanceSq = ((distanceSq * .25) + labDistance + deltaEDistance) / 3;
+
 
       if (distanceSq < minDistanceSq) {
         minDistanceSq = distanceSq;
@@ -559,6 +564,32 @@
   }
 
   /**
+   * calculate the perceptual distance between colors in CIELAB
+   * https://github.com/THEjoezack/ColorMine/blob/master/ColorMine/ColorSpaces/Comparisons/Cie94Comparison.cs
+   *
+   * @param {Array} labA First LAB color in array
+   * @param {Array} labB Second LAB color in array
+   */
+  function deltaE(labA, labB) {
+    var deltaL = labA[0] - labB[0];
+    var deltaA = labA[1] - labB[1];
+    var deltaB = labA[2] - labB[2];
+    var c1 = Math.sqrt(labA[1] * labA[1] + labA[2] * labA[2]);
+    var c2 = Math.sqrt(labB[1] * labB[1] + labB[2] * labB[2]);
+    var deltaC = c1 - c2;
+    var deltaH = deltaA * deltaA + deltaB * deltaB - deltaC * deltaC;
+    deltaH = deltaH < 0 ? 0 : Math.sqrt(deltaH);
+    var sc = 1.0 + 0.045 * c1;
+    var sh = 1.0 + 0.015 * c1;
+    var deltaLKlsl = deltaL / (1.0);
+    var deltaCkcsc = deltaC / (sc);
+    var deltaHkhsh = deltaH / (sh);
+    var i = deltaLKlsl * deltaLKlsl + deltaCkcsc * deltaCkcsc + deltaHkhsh * deltaHkhsh;
+    return i < 0 ? 0 : Math.sqrt(i);
+  }
+
+
+  /**
    * INTERNAL FUNCTIONS
    */
   function degrees(n) {
@@ -636,7 +667,7 @@
     '#808'  // v
   ]);
 
-  nearestHumanColor.VERSION = '1.0.2';
+  nearestHumanColor.VERSION = '1.0.3';
 
   if (typeof module === 'object' && module && module.exports) {
     module.exports = nearestHumanColor;
