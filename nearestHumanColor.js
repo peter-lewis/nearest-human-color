@@ -1,4 +1,4 @@
-(function(context) {
+(function (context) {
 
   /**
    * Defines an available color.
@@ -61,18 +61,23 @@
     }
 
     var distanceSq,
-        labDistance,
-        deltaEDistance,
-        minDistanceSq = Infinity,
-        rgb,
-        value,
-        lab;
+      rgbDelta,
+      rgbDistance,
+      labDistance,
+      deltaEDistance,
+      hueDistance,
+      minDistanceSq = Infinity,
+      rgb,
+      value,
+      lab,
+      currentColor;
 
     colors || (colors = nearestHumanColor.DEFAULT_COLORS);
 
     for (var i = 0; i < colors.length; ++i) {
-      rgb = colors[i].rgb;
-      lab = colors[i].lab;
+      currentColor = colors[i];
+      rgb = currentColor.rgb;
+      lab = currentColor.lab;
 
 
       // distance deltas
@@ -100,24 +105,63 @@
       );
       */
 
-      distanceSq = (
+      rgbDelta = (
         (2 * deltaR) +
         (4 * deltaG) +
         (3 * deltaB) +
-        differencial
+        Math.abs(differencial)
       );
 
       // Compute the color distance using 3 methods, RGB square differencial, ciede2000, and the deltaE method
       // Weight the labs to be worth more to reduce the impact of the square differencial
-      distanceSq = Math.sqrt(distanceSq);
+      rgbDistance = Math.sqrt(rgbDelta);
       labDistance = ciede2000(needle.lab, lab);
       deltaEDistance = deltaE(needle.lab, lab);
-      distanceSq = ((distanceSq * .25) + labDistance + deltaEDistance) / 3;
+      hueDistance = calculateHueDistance(needle.hue, currentColor.hue);
 
+      // Apply quotas
+      rgbDistance = rgbDistance * .25;
+      labDistance = labDistance * 1;
+      deltaEDistance = deltaEDistance * 1;
+      hueDistance = hueDistance * 1;
 
-      if (distanceSq < minDistanceSq) {
+      distanceSq = (rgbDistance + labDistance + deltaEDistance + hueDistance);
+
+      var rgbNewMatch = false;
+      var labNewMatch = false;
+      var deltaENewMatch = false;
+
+      if (value) {
+        if (rgbDistance <= value.rgbDistance) {
+          rgbNewMatch = true
+        }
+
+        if (labDistance <= value.labDistance) {
+          labNewMatch = true
+        }
+
+        if (deltaEDistance <= value.deltaEDistance) {
+          deltaENewMatch = true
+        }
+      }
+
+      var matchSum = 0;
+      if (rgbNewMatch) {
+        matchSum = matchSum + 1;
+      }
+      if (labNewMatch) {
+        matchSum = matchSum + 1;
+      }
+      if (deltaENewMatch) {
+        matchSum = matchSum + 1;
+      }
+
+      if (distanceSq < minDistanceSq || matchSum >= 3) {
         minDistanceSq = distanceSq;
         value = colors[i];
+        value.rgbDistance = rgbDistance;
+        value.labDistance = labDistance;
+        value.deltaEDistance = deltaEDistance;
       }
     }
 
@@ -186,7 +230,7 @@
    */
   nearestHumanColor.from = function from(availableColors) {
     var colors = mapColors(availableColors),
-        nearestHumanColorBase = nearestHumanColor;
+      nearestHumanColorBase = nearestHumanColor;
 
     var matcher = function nearestHumanColor(hex) {
       return nearestHumanColorBase(hex, colors);
@@ -218,22 +262,27 @@
    */
   function mapColors(colors) {
     if (colors instanceof Array) {
-      return colors.map(function(color) {
+      return colors.map(function (color) {
         return createColorSpec(color);
       });
     }
 
-    return Object.keys(colors).map(function(name) {
+    return Object.keys(colors).map(function (name) {
       return createColorSpec(colors[name], name);
     });
   };
 
-  function hexToLab (hexColor) {
+  function hexToLab(hexColor) {
     var rgbColor = parseColor(hexColor);
     return rgbToLab([rgbColor.r, rgbColor.g, rgbColor.b]);
   }
 
-  function rgbToXyz (rgb) {
+  function hexToHsl(hexColor) {
+    var rgbColor = parseColor(hexColor);
+    return rgbToHsl([rgbColor.r, rgbColor.g, rgbColor.b]);
+  }
+
+  function rgbToXyz(rgb) {
     var r = rgb[0] / 255;
     var g = rgb[1] / 255;
     var b = rgb[2] / 255;
@@ -250,8 +299,8 @@
     return [x * 100, y * 100, z * 100];
   };
 
-  function rgbToLab (rgb) {
-    var xyz = rgbToXyz (rgb);
+  function rgbToLab(rgb) {
+    var xyz = rgbToXyz(rgb);
     var x = xyz[0];
     var y = xyz[1];
     var z = xyz[2];
@@ -270,6 +319,38 @@
 
     return [l, a, b];
   };
+
+  function rgbToHsl(rgb) {
+    var r = rgb[0] / 255;
+    var g = rgb[1] / 255;
+    var b = rgb[2] / 255;
+
+    r /= 255, g /= 255, b /= 255;
+    var max = Math.max(r, g, b),
+      min = Math.min(r, g, b);
+    var h, s, l = (max + min) / 2;
+
+    if (max == min) {
+      h = s = 0; // achromatic
+    } else {
+      var d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r:
+          h = (g - b) / d + (g < b ? 6 : 0);
+          break;
+        case g:
+          h = (b - r) / d + 2;
+          break;
+        case b:
+          h = (r - g) / d + 4;
+          break;
+      }
+      h /= 6;
+    }
+
+    return [h, s, l];
+  }
 
   /**
    * Parses a color from a string.
@@ -324,7 +405,11 @@
       blue = parseInt(hexMatch[2], 16);
 
 
-      return { r: red, g: green, b: blue };
+      return {
+        r: red,
+        g: green,
+        b: blue
+      };
     }
 
     var rgbMatch = source.match(/^rgb\(\s*(\d{1,3}%?),\s*(\d{1,3}%?),\s*(\d{1,3}%?)\s*\)$/i);
@@ -333,7 +418,11 @@
       green = parseComponentValue(rgbMatch[2]);
       blue = parseComponentValue(rgbMatch[3]);
 
-      return { r: red, g: green, b: blue };
+      return {
+        r: red,
+        g: green,
+        b: blue
+      };
     }
 
     throw Error('"' + source + '" is not a valid color');
@@ -370,6 +459,10 @@
       color.source = input;
       color.rgb = parseColor(input);
       color.lab = hexToLab(input);
+      color.hsl = hexToHsl(input);
+      color.hue = color.hsl[0] * 360;
+      color.saturation = color.hsl[1];
+      color.brightness = (color.rgb[0] * 0.299 + color.rgb[1] * 0.587 + color.rgb[2] * 0.114) / 256;
 
     } else if (typeof input === 'object') {
       // This is for if/when we're concatenating lists of colors.
@@ -378,6 +471,10 @@
       }
       color.rgb = input;
       color.lab = hexToLab(input);
+      color.hsl = hexToHsl(input);
+      color.hue = color.hsl[0] * 360;
+      color.saturation = color.hsl[1];
+      color.brightness = (color.rgb[0] * 0.299 + color.rgb[1] * 0.587 + color.rgb[2] * 0.114) / 256;
       color.source = rgbToHex(input);
     }
 
@@ -494,8 +591,16 @@
      * Implementation Notes, Supplementary Test Data, and Mathematical Observations"
      * by Gaurav Sharma, Wencheng Wu and Edul N. Dalal.
      */
-    var c1 = {L: color1[0], a: color1[1], b: color1[2]};
-    var c2 = {L: color2[0], a: color2[1], b: color2[2]};
+    var c1 = {
+      L: color1[0],
+      a: color1[1],
+      b: color1[2]
+    };
+    var c2 = {
+      L: color2[0],
+      a: color2[1],
+      b: color2[2]
+    };
 
     // Get L,a,b values for color 1
     var L1 = c1.L;
@@ -588,6 +693,10 @@
     return i < 0 ? 0 : Math.sqrt(i);
   }
 
+  function calculateHueDistance(hue1, hue2) {
+    var d = Math.abs(hue1 - hue2);
+    return d > 180 ? 360 - d : d;
+  }
 
   /**
    * INTERNAL FUNCTIONS
@@ -664,7 +773,7 @@
     '#0f0', // g
     '#00f', // b
     '#008', // i
-    '#808'  // v
+    '#808' // v
   ]);
 
   nearestHumanColor.VERSION = '1.0.3';

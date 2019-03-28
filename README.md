@@ -35,7 +35,7 @@ This library uses an approach to approximate what the human eye sees. Performanc
 
 The library then takes the results from the Euclidean color differencial, and then average it with CIEDE2000 color differencial calculation to obtain an approximation of closest color as a human eye would see.
 
-The approach is a combination of the two methods listed here, with some tweaking to imrpove output:
+The approach is a combination of the two methods listed here, along with a factor for hue as well, with some tweaking to imrpove output:
 https://en.wikipedia.org/wiki/Color_difference
 
 The most realistic optimization that could be made here would probably be to cache results so that multiple calls for the same color can return immediately.
